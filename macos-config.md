@@ -435,3 +435,144 @@ killall Dock
 
 echo "=== macOS 系统设置配置完成 ==="
 ```
+
+---
+
+## 4. 开发工具配置
+
+### 4.1 dotfiles 同步
+
+使用 [dotbot](https://github.com/anishathalye/dotbot) 管理的 dotfiles 仓库，包含 zshrc、gitconfig、tmux.conf、vimrc、ssh config、zsh 模块等配置。
+
+**安装**
+
+```bash
+if [ ! -d "$HOME/dotfiles" ]; then
+  git clone https://github.com/Ziy1-Tan/dotfiles.git ~/dotfiles
+fi
+cd ~/dotfiles && git submodule update --init --recursive && ./install
+```
+
+**验证**
+
+```bash
+test -L ~/.zshrc && echo "zshrc symlinked"
+test -L ~/.gitconfig && echo "gitconfig symlinked"
+test -L ~/.tmux.conf && echo "tmux.conf symlinked"
+test -L ~/.vimrc && echo "vimrc symlinked"
+```
+
+### 4.2 终端配置
+
+- **WezTerm** (`~/.wezterm.lua`)：dotfiles 不管理此文件，需要单独配置或从备份恢复。
+- **Kitty** (`~/.config/kitty/`)：dotfiles 不管理此目录，需要单独配置或从备份恢复。
+
+> **注意**：如果有备份这些配置文件，可以手动复制到对应位置。
+
+---
+
+## 5. Dock 排列规范
+
+> 清空当前 Dock 后按指定顺序添加应用。仅添加已安装在 `/Applications/` 中的应用。
+
+**安装 dockutil**
+
+```bash
+brew install dockutil
+```
+
+**配置 Dock**
+
+```bash
+# 清空 Dock
+dockutil --remove all --no-restart
+
+# 按顺序添加应用
+dockutil --add "/System/Applications/Finder.app" --no-restart
+dockutil --add "/Applications/Microsoft Edge.app" --no-restart
+dockutil --add "/Applications/Google Chrome.app" --no-restart
+dockutil --add "/System/Applications/System Settings.app" --no-restart
+dockutil --add "/Applications/企业微信.app" --no-restart
+dockutil --add "/Applications/Visual Studio Code.app" --no-restart
+dockutil --add "/Applications/CodeBuddy CN.app" --no-restart
+
+# 应用更改
+killall Dock
+```
+
+> **注意**：以上 Dock 排列中的部分应用（Microsoft Edge、Google Chrome、企业微信、VS Code、CodeBuddy CN）不在第 2 节的安装清单中，它们可能通过公司内部渠道或其他方式安装。Dock 排列步骤应在所有应用安装完成后执行，且仅添加实际存在于 `/Applications/` 中的应用。
+
+---
+
+## 6. 验收标准
+
+> 将所有验证整合为最终检查清单，在全部配置完成后统一执行。
+
+### 6.1 工具版本检查
+
+```bash
+brew --version
+node --version          # >= 20.x
+npm --version
+bun --version
+uv --version
+conda --version
+nvm --version
+```
+
+### 6.2 应用安装验证
+
+```bash
+ls /Applications/WezTerm.app
+ls /Applications/Rectangle.app
+ls "/Applications/Hidden Bar.app"
+ls /Applications/Maccy.app
+ls /Applications/Snipaste.app
+ls /Applications/Itsycal.app
+ls /Applications/BetterDisplay.app
+ls /Applications/Obsidian.app
+ls /Library/Screen\ Savers/Fliqlo.saver
+ls ~/Library/Fonts/*FiraCode*
+ls ~/Library/Fonts/*SauceCodePro*
+```
+
+### 6.3 架构验证
+
+```bash
+# 确认关键应用为 ARM64 架构
+lipo -archs /Applications/WezTerm.app/Contents/MacOS/wezterm-gui
+# 预期输出包含 arm64
+```
+
+### 6.4 系统设置验证
+
+```bash
+defaults read com.apple.dock autohide              # → 0
+defaults read com.apple.dock tilesize              # → 35
+defaults read com.apple.dock orientation           # → right
+defaults read NSGlobalDomain AppleInterfaceStyle   # → Dark
+defaults read NSGlobalDomain KeyRepeat             # → 2
+defaults read NSGlobalDomain InitialKeyRepeat      # → 15
+defaults read com.apple.dock wvous-tl-corner       # → 2
+defaults read com.apple.dock wvous-br-corner       # → 5
+defaults read com.apple.WindowManager GloballyEnabled  # → 1
+```
+
+### 6.5 dotfiles 部署验证
+
+```bash
+test -L ~/.zshrc && echo "ok"
+test -L ~/.gitconfig && echo "ok"
+zsh -c "source ~/.zshrc && echo ok"
+```
+
+---
+
+## 7. 备注（执行策略）
+
+- 遇到需要 `sudo` 或密码输入的步骤时，使用 Terminal.app 执行以便用户输入密码。
+- 官网优先级高于其他来源；除非官网不可用，不使用第三方下载站。
+- UI 自动化执行系统设置时，优先使用 deep link（如 `open "x-apple.systempreferences:com.apple.Displays-Settings.extension"`）定位设置页面，避免依赖搜索框（输入法可能影响搜索词）。
+- 若自动化工具无法直接控制某页面，退回"打开官网 + 人工操作"的兜底流程。
+- 架构优先级：arm64 > universal > x86_64（仅在无其他选择时接受）。
+- 本文档设计为一次性执行，不用于记录历史进展。
