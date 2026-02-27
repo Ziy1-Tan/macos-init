@@ -6,7 +6,7 @@
 
 - **本文档用于在新 Mac 上执行一次完整的初始化配置**，覆盖从基础工具链到开发环境的全部步骤。
 - **适用范围**：全新 Mac，Apple Silicon (ARM64) 架构。
-- **CLI 工具通过 Homebrew 安装；GUI 应用一律从官网下载**，不使用 Homebrew Cask。
+- **CLI 工具通过 Homebrew 安装；GUI 应用一律从官网下载**，不使用 Homebrew Cask。下载过程使用 [agent-browser](https://github.com/vercel-labs/agent-browser) 自动化。
 - **系统设置优先使用 `defaults write` / CLI 命令**；无稳定 CLI 的设置使用 UI 自动化（如 AppleScript / System Events）。
 - **幂等性**：每个步骤执行前先检查当前状态（如 `command -v brew`），避免重复执行或覆盖已有配置。
 - **架构要求**：优先 arm64 原生二进制，可接受 universal，避免仅 x86_64 的构建产物。
@@ -65,8 +65,6 @@ command -v rg fd fzf zoxide neofetch curl tldr tmux zsh
 |------|----------|----------|
 | nvm | `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh \| bash` | `nvm --version` |
 | Node.js LTS | `nvm install --lts` | `node --version`（>= 20.x）、`npm --version` |
-| bun | `curl -fsSL https://bun.sh/install \| bash` | `bun --version` |
-| uv | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | `uv --version` |
 | Miniconda | 见下方安装步骤 | `conda --version` |
 
 **nvm + Node.js**
@@ -86,28 +84,6 @@ nvm install --lts
 nvm --version
 node --version   # >= 20.x
 npm --version
-```
-
-**bun**
-
-```bash
-if ! command -v bun &>/dev/null; then
-  curl -fsSL https://bun.sh/install | bash
-fi
-
-# 验证
-bun --version
-```
-
-**uv**
-
-```bash
-if ! command -v uv &>/dev/null; then
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-fi
-
-# 验证
-uv --version
 ```
 
 **Miniconda**
@@ -136,166 +112,179 @@ conda --version
 
 ## 2. 官网应用安装
 
-> 所有 GUI 应用一律从官网下载安装，不使用 Homebrew Cask。Agent 应访问官网获取下载链接。Apple Silicon 架构优先。
+> 所有 GUI 应用一律从官网下载安装，不使用 Homebrew Cask。下载过程由 Agent 使用 `agent-browser` 访问官网自动完成。Apple Silicon 架构优先。
 
-### 2.1 WezTerm（终端模拟器）
-
-- **官网**：https://wezfurlong.org/wezterm/
-- **安装方式**：下载 DMG，打开后拖动 WezTerm.app 到 `/Applications/`
-- **架构说明**：下载页面选择 macOS Apple Silicon 版本
+### 2.0 前置依赖：安装 agent-browser
 
 ```bash
-# 挂载 DMG 并安装（示例）
-hdiutil attach ~/Downloads/WezTerm-*.dmg
-cp -R /Volumes/WezTerm*/WezTerm.app /Applications/
-hdiutil detach /Volumes/WezTerm*
+if ! command -v agent-browser &>/dev/null; then
+  npm install -g agent-browser
+  agent-browser install
+fi
 ```
 
-### 2.2 Rectangle（窗口管理）
+### 2.1 DMG 应用（标准拖拽安装）
 
-- **官网**：https://rectangleapp.com/
-- **安装方式**：下载 DMG，打开后拖动 Rectangle.app 到 `/Applications/`
-- **架构说明**：官方提供 Universal 二进制，原生支持 Apple Silicon
+Agent 对每个应用执行：`agent-browser` 访问官网 → 定位下载按钮 → 下载 DMG 到 `~/Downloads/` → bash 挂载安装。
+
+| 应用 | 用途 | 官网 | 架构 |
+|------|------|------|------|
+| WezTerm | 终端模拟器 | https://wezfurlong.org/wezterm/ | ARM64 |
+| Rectangle | 窗口管理 | https://rectangleapp.com/ | Universal |
+| Hidden Bar | 菜单栏管理 | https://github.com/dwarvesf/hidden | Universal |
+| Maccy | 剪贴板管理 | https://maccy.app/ | Universal |
+| Snipaste | 截图/贴图 | https://www.snipaste.com/ | ARM64 |
+| BetterDisplay | 显示器管理 | https://github.com/wahlber/BetterDisplay | Universal |
+| Obsidian | 笔记 | https://obsidian.md/ | ARM64 |
+| 微信 | 即时通讯 | https://weixin.qq.com/ | Universal |
+| QQ | 即时通讯 | https://im.qq.com/macqq/index.shtml | Universal |
+| Microsoft Edge | 浏览器 | https://www.microsoft.com/edge | Universal |
+| Google Chrome | 浏览器 | https://www.google.com/chrome/ | ARM64 |
+| Visual Studio Code | 代码编辑器 | https://code.visualstudio.com/ | ARM64 |
+| SwitchHosts | Hosts 管理 | https://github.com/oldj/SwitchHosts | Universal |
+
+**自动下载流程（Agent 对表格中每个应用重复执行）**
 
 ```bash
-hdiutil attach ~/Downloads/Rectangle*.dmg
-cp -R /Volumes/Rectangle*/Rectangle.app /Applications/
-hdiutil detach /Volumes/Rectangle*
+# 1. 访问官网，截图定位下载入口
+agent-browser open "<官网URL>"
+agent-browser screenshot --annotate
+
+# 2. 定位 Apple Silicon / ARM64 / Universal 下载链接并点击
+agent-browser snapshot -i
+agent-browser click <下载按钮ref>          # Agent 根据 snapshot 结果确定 ref
+
+# 3. 如有中间页面（如 GitHub Release），继续导航并定位 .dmg 资产
+agent-browser snapshot -i
+agent-browser download <dmg链接ref> ~/Downloads/<应用名>.dmg
+
+# 4. 挂载并安装
+hdiutil attach ~/Downloads/<应用名>.dmg
+cp -R /Volumes/<卷名>/<应用名>.app /Applications/
+hdiutil detach /Volumes/<卷名>
 ```
 
-### 2.3 HiddenBar（菜单栏管理）
+> **注意**：Agent 需根据每个官网的实际页面结构调整 `snapshot` → `click` → `download` 步骤。上述为通用模板，具体 `@ref` 由 Agent 在运行时通过 `snapshot -i` 获取。
 
-- **官网**：https://github.com/dwarvesf/hidden
-- **安装方式**：从 GitHub Release 页面下载 DMG，打开后拖动 Hidden Bar.app 到 `/Applications/`
-- **架构说明**：GitHub Release 提供 Universal 二进制
+### 2.2 非标准安装
 
-```bash
-hdiutil attach ~/Downloads/Hidden\ Bar*.dmg
-cp -R "/Volumes/Hidden Bar*/Hidden Bar.app" /Applications/
-hdiutil detach "/Volumes/Hidden Bar*"
-```
-
-### 2.4 Maccy（剪贴板管理）
-
-- **官网**：https://maccy.app/
-- **安装方式**：下载 DMG，打开后拖动 Maccy.app 到 `/Applications/`
-- **架构说明**：官方提供 Universal 二进制，原生支持 Apple Silicon
-
-```bash
-hdiutil attach ~/Downloads/Maccy*.dmg
-cp -R /Volumes/Maccy*/Maccy.app /Applications/
-hdiutil detach /Volumes/Maccy*
-```
-
-### 2.5 Snipaste（截图/贴图）
-
-- **官网**：https://www.snipaste.com/
-- **安装方式**：下载 DMG，打开后拖动 Snipaste.app 到 `/Applications/`
-- **架构说明**：下载页面选择 macOS ARM64 版本
-
-```bash
-hdiutil attach ~/Downloads/Snipaste-*.dmg
-cp -R /Volumes/Snipaste*/Snipaste.app /Applications/
-hdiutil detach /Volumes/Snipaste*
-```
-
-### 2.6 Itsycal（菜单栏日历）
+#### Itsycal（菜单栏日历 · zip 下载）
 
 - **官网**：https://www.mowglii.com/itsycal/
-- **安装方式**：下载 zip 文件，解压后将 Itsycal.app 移动到 `/Applications/`
-- **架构说明**：官方提供 Universal 二进制
+- **架构**：Universal
 
 ```bash
-unzip ~/Downloads/Itsycal*.zip -d /tmp/itsycal
+# Agent 下载
+agent-browser open "https://www.mowglii.com/itsycal/"
+agent-browser snapshot -i
+agent-browser download <zip链接ref> ~/Downloads/Itsycal.zip
+
+# 安装
+unzip ~/Downloads/Itsycal.zip -d /tmp/itsycal
 mv /tmp/itsycal/Itsycal.app /Applications/
 rm -rf /tmp/itsycal
 ```
 
-### 2.7 BetterDisplay（显示器管理）
-
-- **官网**：https://github.com/wahlber/BetterDisplay
-- **安装方式**：从 GitHub Release 页面下载 DMG，打开后拖动 BetterDisplay.app 到 `/Applications/`
-- **架构说明**：GitHub Release 提供 Universal 二进制
-
-```bash
-hdiutil attach ~/Downloads/BetterDisplay-*.dmg
-cp -R /Volumes/BetterDisplay*/BetterDisplay.app /Applications/
-hdiutil detach /Volumes/BetterDisplay*
-```
-
-### 2.8 Obsidian（笔记）
-
-- **官网**：https://obsidian.md/
-- **安装方式**：下载 DMG，打开后拖动 Obsidian.app 到 `/Applications/`
-- **架构说明**：下载页面提供 Apple Silicon (ARM64) 原生版本
-
-```bash
-hdiutil attach ~/Downloads/Obsidian-*.dmg
-cp -R /Volumes/Obsidian*/Obsidian.app /Applications/
-hdiutil detach /Volumes/Obsidian*
-```
-
-### 2.9 Fliqlo（翻页时钟屏保）
+#### Fliqlo（翻页时钟屏保 · .saver 文件）
 
 - **官网**：https://fliqlo.com/
-- **安装方式**：下载后获得 `.saver` 文件，双击安装到 `/Library/Screen Savers/`
-- **架构说明**：屏保文件为通用格式，兼容 Apple Silicon
+- **架构**：通用格式
 
 ```bash
-# 双击 .saver 文件会自动弹出安装对话框，或手动复制
+# Agent 下载
+agent-browser open "https://fliqlo.com/"
+agent-browser snapshot -i
+agent-browser download <下载按钮ref> ~/Downloads/Fliqlo.saver
+
+# 安装
 cp ~/Downloads/Fliqlo.saver /Library/Screen\ Savers/
 ```
 
-### 2.10 Fira Code Nerd Font（编程字体）
+#### Nerd Fonts（编程字体 · zip 下载）
 
 - **官网**：https://www.nerdfonts.com/
 - **GitHub Release**：https://github.com/ryanoasis/nerd-fonts/releases
-- **安装方式**：从 GitHub Release 下载 `FiraCode.zip`，解压后将所有 `.ttf` 文件复制到 `~/Library/Fonts/`
-- **架构说明**：字体文件与 CPU 架构无关
+- 需要安装的字体：**FiraCode**、**SourceCodePro (SauceCodePro)**
+- 字体文件与 CPU 架构无关
 
 ```bash
-# 下载并解压
-unzip ~/Downloads/FiraCode.zip -d /tmp/FiraCode
+# Agent 访问 GitHub Release 页面下载两个字体 zip
+agent-browser open "https://github.com/ryanoasis/nerd-fonts/releases/latest"
+agent-browser snapshot -i
+agent-browser download <FiraCode.zip-ref> ~/Downloads/FiraCode.zip
+agent-browser download <SourceCodePro.zip-ref> ~/Downloads/SourceCodePro.zip
 
-# 安装字体
-cp /tmp/FiraCode/*.ttf ~/Library/Fonts/
-
-# 清理临时文件
-rm -rf /tmp/FiraCode
+# 安装
+for font in FiraCode SourceCodePro; do
+  unzip ~/Downloads/${font}.zip -d /tmp/${font}
+  cp /tmp/${font}/*.ttf ~/Library/Fonts/
+  rm -rf /tmp/${font}
+done
 ```
 
-### 2.11 SauceCodePro Nerd Font（编程字体）
+#### Microsoft To Do（Mac App Store）
 
-- **官网**：https://www.nerdfonts.com/
-- **GitHub Release**：https://github.com/ryanoasis/nerd-fonts/releases
-- **安装方式**：从 GitHub Release 下载 `SourceCodePro.zip`，解压后将所有 `.ttf` 文件复制到 `~/Library/Fonts/`
-- **架构说明**：字体文件与 CPU 架构无关
+- **官网**：https://apps.apple.com/app/microsoft-to-do/id1274495053
+- 通过 Mac App Store 下载安装，App Store 自动分发 Apple Silicon 原生版本。
 
 ```bash
-# 下载并解压
-unzip ~/Downloads/SourceCodePro.zip -d /tmp/SauceCodePro
-
-# 安装字体
-cp /tmp/SauceCodePro/*.ttf ~/Library/Fonts/
-
-# 清理临时文件
-rm -rf /tmp/SauceCodePro
+# Agent 打开 App Store 页面引导用户安装
+agent-browser open "https://apps.apple.com/app/microsoft-to-do/id1274495053"
+# App Store 应用需用户在弹出的 App Store 中点击"获取"，无法全自动完成
 ```
 
-### 2.12 安装验证
+#### 搜狗输入法（安装器 · 非拖拽）
+
+- **官网**：https://pinyin.sogou.com/mac/
+- **架构**：ARM64
 
 ```bash
-# 应用安装验证
-ls /Applications/WezTerm.app
-ls /Applications/Rectangle.app
-ls "/Applications/Hidden Bar.app"
-ls /Applications/Maccy.app
-ls /Applications/Snipaste.app
-ls /Applications/Itsycal.app
-ls /Applications/BetterDisplay.app
-ls /Applications/Obsidian.app
-ls /Library/Screen\ Savers/Fliqlo.saver
-ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro*
+# Agent 下载
+agent-browser open "https://pinyin.sogou.com/mac/"
+agent-browser snapshot -i
+agent-browser download <下载按钮ref> ~/Downloads/sogou_mac.dmg
+
+# 安装（DMG 内为安装器，非拖拽）
+hdiutil attach ~/Downloads/sogou_mac.dmg
+open /Volumes/sogou*/安装搜狗输入法.app || open /Volumes/sogou*/*.pkg
+hdiutil detach /Volumes/sogou*
+```
+
+> **注意**：安装完成后需在「系统设置 > 键盘 > 输入法」中添加搜狗输入法。
+
+### 2.3 安装验证
+
+```bash
+apps=(
+  /Applications/WezTerm.app
+  /Applications/Rectangle.app
+  "/Applications/Hidden Bar.app"
+  /Applications/Maccy.app
+  /Applications/Snipaste.app
+  /Applications/Itsycal.app
+  /Applications/BetterDisplay.app
+  /Applications/Obsidian.app
+  "/Library/Screen Savers/Fliqlo.saver"
+  /Applications/WeChat.app
+  /Applications/QQ.app
+  "/Applications/Microsoft To Do.app"
+  "/Applications/Microsoft Edge.app"
+  "/Applications/Google Chrome.app"
+  "/Applications/Visual Studio Code.app"
+  /Applications/SwitchHosts.app
+)
+
+for app in "${apps[@]}"; do
+  [ -e "$app" ] && echo "✓ $app" || echo "✗ $app 未安装"
+done
+
+# 字体验证
+ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro* 2>/dev/null \
+  && echo "✓ Nerd Fonts 已安装" || echo "✗ Nerd Fonts 未安装"
+
+# 搜狗输入法验证（安装在 /Library/Input Methods/）
+[ -d "/Library/Input Methods/SogouInput.app" ] \
+  && echo "✓ 搜狗输入法已安装" || echo "✗ 搜狗输入法未安装"
 ```
 
 ---
@@ -465,7 +454,6 @@ test -L ~/.vimrc && echo "vimrc symlinked"
 ### 4.2 终端配置
 
 - **WezTerm** (`~/.wezterm.lua`)：dotfiles 不管理此文件，需要单独配置或从备份恢复。
-- **Kitty** (`~/.config/kitty/`)：dotfiles 不管理此目录，需要单独配置或从备份恢复。
 
 > **注意**：如果有备份这些配置文件，可以手动复制到对应位置。
 
@@ -485,22 +473,30 @@ brew install dockutil
 
 ```bash
 # 清空 Dock
-dockutil --remove all --no-restart
+dockutil --remove all
+sleep 1
 
-# 按顺序添加应用
-dockutil --add "/System/Applications/Finder.app" --no-restart
+# ── 系统 ──
+dockutil --add "/System/Applications/System Settings.app" --no-restart
+# ── 浏览器 ──
 dockutil --add "/Applications/Microsoft Edge.app" --no-restart
 dockutil --add "/Applications/Google Chrome.app" --no-restart
-dockutil --add "/System/Applications/System Settings.app" --no-restart
-dockutil --add "/Applications/企业微信.app" --no-restart
+# ── 开发工具 ──
 dockutil --add "/Applications/Visual Studio Code.app" --no-restart
-dockutil --add "/Applications/CodeBuddy CN.app" --no-restart
+dockutil --add "/Applications/WezTerm.app" --no-restart
+dockutil --add "/Applications/SwitchHosts.app" --no-restart
+# ── 日常工具 ──
+dockutil --add "/Applications/WeChat.app" --no-restart
+dockutil --add "/Applications/QQ.app" --no-restart
+dockutil --add "/Applications/Obsidian.app" --no-restart
+dockutil --add "/Applications/Microsoft To Do.app"
+sleep 1
 
-# 应用更改
-killall Dock
+# 插入分隔线（必须在所有应用添加完成后执行，否则后续 app 可能丢失）
+dockutil --add '' --type small-spacer --section apps --after 'System Settings' --no-restart
+dockutil --add '' --type small-spacer --section apps --after 'Google Chrome' --no-restart
+dockutil --add '' --type small-spacer --section apps --after 'SwitchHosts'
 ```
-
-> **注意**：以上 Dock 排列中的部分应用（Microsoft Edge、Google Chrome、企业微信、VS Code、CodeBuddy CN）不在第 2 节的安装清单中，它们可能通过公司内部渠道或其他方式安装。Dock 排列步骤应在所有应用安装完成后执行，且仅添加实际存在于 `/Applications/` 中的应用。
 
 ---
 
@@ -514,27 +510,13 @@ killall Dock
 brew --version
 node --version          # >= 20.x
 npm --version
-bun --version
-uv --version
 conda --version
 nvm --version
 ```
 
 ### 6.2 应用安装验证
 
-```bash
-ls /Applications/WezTerm.app
-ls /Applications/Rectangle.app
-ls "/Applications/Hidden Bar.app"
-ls /Applications/Maccy.app
-ls /Applications/Snipaste.app
-ls /Applications/Itsycal.app
-ls /Applications/BetterDisplay.app
-ls /Applications/Obsidian.app
-ls /Library/Screen\ Savers/Fliqlo.saver
-ls ~/Library/Fonts/*FiraCode*
-ls ~/Library/Fonts/*SauceCodePro*
-```
+> 见第 2.3 节安装验证脚本，此处不再重复。
 
 ### 6.3 架构验证
 
