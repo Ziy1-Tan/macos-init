@@ -131,3 +131,169 @@ fi
 # 验证（需要重新加载 shell 或 source ~/.zshrc）
 conda --version
 ```
+
+---
+
+## 2. 官网应用安装
+
+> 所有 GUI 应用一律从官网下载安装，不使用 Homebrew Cask。Agent 应访问官网获取下载链接。Apple Silicon 架构优先。
+
+### 2.1 WezTerm（终端模拟器）
+
+- **官网**：https://wezfurlong.org/wezterm/
+- **安装方式**：下载 DMG，打开后拖动 WezTerm.app 到 `/Applications/`
+- **架构说明**：下载页面选择 macOS Apple Silicon 版本
+
+```bash
+# 挂载 DMG 并安装（示例）
+hdiutil attach ~/Downloads/WezTerm-*.dmg
+cp -R /Volumes/WezTerm*/WezTerm.app /Applications/
+hdiutil detach /Volumes/WezTerm*
+```
+
+### 2.2 Rectangle（窗口管理）
+
+- **官网**：https://rectangleapp.com/
+- **安装方式**：下载 DMG，打开后拖动 Rectangle.app 到 `/Applications/`
+- **架构说明**：官方提供 Universal 二进制，原生支持 Apple Silicon
+
+```bash
+hdiutil attach ~/Downloads/Rectangle*.dmg
+cp -R /Volumes/Rectangle*/Rectangle.app /Applications/
+hdiutil detach /Volumes/Rectangle*
+```
+
+### 2.3 HiddenBar（菜单栏管理）
+
+- **官网**：https://github.com/dwarvesf/hidden
+- **安装方式**：从 GitHub Release 页面下载 DMG，打开后拖动 Hidden Bar.app 到 `/Applications/`
+- **架构说明**：GitHub Release 提供 Universal 二进制
+
+```bash
+hdiutil attach ~/Downloads/Hidden\ Bar*.dmg
+cp -R "/Volumes/Hidden Bar*/Hidden Bar.app" /Applications/
+hdiutil detach "/Volumes/Hidden Bar*"
+```
+
+### 2.4 Maccy（剪贴板管理）
+
+- **官网**：https://maccy.app/
+- **安装方式**：下载 DMG，打开后拖动 Maccy.app 到 `/Applications/`
+- **架构说明**：官方提供 Universal 二进制，原生支持 Apple Silicon
+
+```bash
+hdiutil attach ~/Downloads/Maccy*.dmg
+cp -R /Volumes/Maccy*/Maccy.app /Applications/
+hdiutil detach /Volumes/Maccy*
+```
+
+### 2.5 Snipaste（截图/贴图）
+
+- **官网**：https://www.snipaste.com/
+- **安装方式**：下载 DMG，打开后拖动 Snipaste.app 到 `/Applications/`
+- **架构说明**：下载页面选择 macOS ARM64 版本
+
+```bash
+hdiutil attach ~/Downloads/Snipaste-*.dmg
+cp -R /Volumes/Snipaste*/Snipaste.app /Applications/
+hdiutil detach /Volumes/Snipaste*
+```
+
+### 2.6 Itsycal（菜单栏日历）
+
+- **官网**：https://www.mowglii.com/itsycal/
+- **安装方式**：下载 zip 文件，解压后将 Itsycal.app 移动到 `/Applications/`
+- **架构说明**：官方提供 Universal 二进制
+
+```bash
+unzip ~/Downloads/Itsycal*.zip -d /tmp/itsycal
+mv /tmp/itsycal/Itsycal.app /Applications/
+rm -rf /tmp/itsycal
+```
+
+### 2.7 BetterDisplay（显示器管理）
+
+- **官网**：https://github.com/wahlber/BetterDisplay
+- **安装方式**：从 GitHub Release 页面下载 DMG，打开后拖动 BetterDisplay.app 到 `/Applications/`
+- **架构说明**：GitHub Release 提供 Universal 二进制
+
+```bash
+hdiutil attach ~/Downloads/BetterDisplay-*.dmg
+cp -R /Volumes/BetterDisplay*/BetterDisplay.app /Applications/
+hdiutil detach /Volumes/BetterDisplay*
+```
+
+### 2.8 Obsidian（笔记）
+
+- **官网**：https://obsidian.md/
+- **安装方式**：下载 DMG，打开后拖动 Obsidian.app 到 `/Applications/`
+- **架构说明**：下载页面提供 Apple Silicon (ARM64) 原生版本
+
+```bash
+hdiutil attach ~/Downloads/Obsidian-*.dmg
+cp -R /Volumes/Obsidian*/Obsidian.app /Applications/
+hdiutil detach /Volumes/Obsidian*
+```
+
+### 2.9 Fliqlo（翻页时钟屏保）
+
+- **官网**：https://fliqlo.com/
+- **安装方式**：下载后获得 `.saver` 文件，双击安装到 `/Library/Screen Savers/`
+- **架构说明**：屏保文件为通用格式，兼容 Apple Silicon
+
+```bash
+# 双击 .saver 文件会自动弹出安装对话框，或手动复制
+cp ~/Downloads/Fliqlo.saver /Library/Screen\ Savers/
+```
+
+### 2.10 Fira Code Nerd Font（编程字体）
+
+- **官网**：https://www.nerdfonts.com/
+- **GitHub Release**：https://github.com/ryanoasis/nerd-fonts/releases
+- **安装方式**：从 GitHub Release 下载 `FiraCode.zip`，解压后将所有 `.ttf` 文件复制到 `~/Library/Fonts/`
+- **架构说明**：字体文件与 CPU 架构无关
+
+```bash
+# 下载并解压
+unzip ~/Downloads/FiraCode.zip -d /tmp/FiraCode
+
+# 安装字体
+cp /tmp/FiraCode/*.ttf ~/Library/Fonts/
+
+# 清理临时文件
+rm -rf /tmp/FiraCode
+```
+
+### 2.11 SauceCodePro Nerd Font（编程字体）
+
+- **官网**：https://www.nerdfonts.com/
+- **GitHub Release**：https://github.com/ryanoasis/nerd-fonts/releases
+- **安装方式**：从 GitHub Release 下载 `SourceCodePro.zip`，解压后将所有 `.ttf` 文件复制到 `~/Library/Fonts/`
+- **架构说明**：字体文件与 CPU 架构无关
+
+```bash
+# 下载并解压
+unzip ~/Downloads/SourceCodePro.zip -d /tmp/SauceCodePro
+
+# 安装字体
+cp /tmp/SauceCodePro/*.ttf ~/Library/Fonts/
+
+# 清理临时文件
+rm -rf /tmp/SauceCodePro
+```
+
+### 2.12 安装验证
+
+```bash
+# 应用安装验证
+ls /Applications/WezTerm.app
+ls /Applications/Rectangle.app
+ls "/Applications/Hidden Bar.app"
+ls /Applications/Maccy.app
+ls /Applications/Snipaste.app
+ls /Applications/Itsycal.app
+ls /Applications/BetterDisplay.app
+ls /Applications/Obsidian.app
+ls /Library/Screen\ Savers/Fliqlo.saver
+ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro*
+```
