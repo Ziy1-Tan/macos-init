@@ -297,3 +297,141 @@ ls /Applications/Obsidian.app
 ls /Library/Screen\ Savers/Fliqlo.saver
 ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro*
 ```
+
+---
+
+## 3. macOS 系统设置
+
+> 所有设置项均使用 `defaults write` / CLI 命令配置，每项附带验证命令。修改 Dock 相关设置后需执行 `killall Dock` 使其生效。需要 `sudo` 的命令建议在 Terminal.app 中执行以便输入密码。
+
+### 3.1 Dock
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| 自动隐藏 | 关闭 | `defaults write com.apple.dock autohide -bool false` | `defaults read com.apple.dock autohide` → `0` |
+| 图标大小 | 35px | `defaults write com.apple.dock tilesize -integer 35` | `defaults read com.apple.dock tilesize` → `35` |
+| 位置 | 右侧 | `defaults write com.apple.dock orientation -string right` | `defaults read com.apple.dock orientation` → `right` |
+| 放大效果 | 关闭 | `defaults write com.apple.dock magnification -bool false` | `defaults read com.apple.dock magnification` → `0` |
+
+**生效命令**
+
+```bash
+killall Dock
+```
+
+### 3.2 外观
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| 深色模式 | 开启 | `defaults write NSGlobalDomain AppleInterfaceStyle -string Dark` | `defaults read NSGlobalDomain AppleInterfaceStyle` → `Dark` |
+
+### 3.3 触控板与鼠标
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| 触控板速度 | 0.875 | `defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875` | `defaults read NSGlobalDomain com.apple.trackpad.scaling` → `0.875` |
+| 鼠标速度 | 2 | `defaults write NSGlobalDomain com.apple.mouse.scaling -float 2` | `defaults read NSGlobalDomain com.apple.mouse.scaling` → `2` |
+| 轻点来点按 | 开启 | `defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true` | `defaults read com.apple.AppleMultitouchTrackpad Clicking` → `1` |
+| 自然滚动方向 | 开启 | `defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true` | `defaults read NSGlobalDomain com.apple.swipescrolldirection` → `1` |
+
+### 3.4 键盘
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| 按键重复速率 | 最快 (2) | `defaults write NSGlobalDomain KeyRepeat -int 2` | `defaults read NSGlobalDomain KeyRepeat` → `2` |
+| 重复前延迟 | 最短 (15) | `defaults write NSGlobalDomain InitialKeyRepeat -int 15` | `defaults read NSGlobalDomain InitialKeyRepeat` → `15` |
+
+### 3.5 桌面与窗口
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| Stage Manager | 开启 | `defaults write com.apple.WindowManager GloballyEnabled -bool true` | `defaults read com.apple.WindowManager GloballyEnabled` → `1` |
+
+### 3.6 触发角
+
+> 触发角数值含义：`1` = 无操作，`2` = Mission Control，`5` = 启动屏幕保护程序。`modifier` 设为 `0` 表示不需要修饰键。
+
+| 角落 | 动作 | 配置命令 |
+|------|------|----------|
+| 左上角 | Mission Control | `defaults write com.apple.dock wvous-tl-corner -int 2 && defaults write com.apple.dock wvous-tl-modifier -int 0` |
+| 左下角 | 无操作 | `defaults write com.apple.dock wvous-bl-corner -int 1 && defaults write com.apple.dock wvous-bl-modifier -int 0` |
+| 右下角 | 启动屏幕保护 | `defaults write com.apple.dock wvous-br-corner -int 5 && defaults write com.apple.dock wvous-br-modifier -int 0` |
+
+**生效命令**
+
+```bash
+killall Dock
+```
+
+**验证**
+
+```bash
+defaults read com.apple.dock wvous-tl-corner   # → 2
+defaults read com.apple.dock wvous-br-corner   # → 5
+defaults read com.apple.dock wvous-bl-corner   # → 1
+```
+
+### 3.7 屏幕保护
+
+- Fliqlo 须在第 2 节安装完成后配置。
+- 触发方式：右下角触发角（见 3.6）。
+- 选择 Fliqlo 为活跃屏保可能需要 UI 自动化（系统设置 > 屏幕保护程序 > 选择 Fliqlo）。
+
+### 3.8 电源与睡眠
+
+> 需要 `sudo` 权限，Agent 应使用 Terminal.app 执行以便输入密码。
+
+| 设置 | 目标值 | 配置命令 | 验证命令 |
+|------|--------|----------|----------|
+| 接电源时显示器睡眠 | 永不 (0) | `sudo pmset -c displaysleep 0` | `pmset -g custom` 中 AC Power 下 `displaysleep 0` |
+| 接电源时系统睡眠 | 1 分钟 | `sudo pmset -c sleep 1` | `pmset -g custom` 中 AC Power 下 `sleep 1` |
+
+### 3.9 一键配置脚本
+
+> 将 3.1 ~ 3.8 中所有 `defaults write` 与 `pmset` 命令整合为一个脚本，便于一次性执行。
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+echo "=== macOS 系统设置配置开始 ==="
+
+# 3.1 Dock
+defaults write com.apple.dock autohide -bool false
+defaults write com.apple.dock tilesize -integer 35
+defaults write com.apple.dock orientation -string right
+defaults write com.apple.dock magnification -bool false
+
+# 3.2 外观
+defaults write NSGlobalDomain AppleInterfaceStyle -string Dark
+
+# 3.3 触控板与鼠标
+defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875
+defaults write NSGlobalDomain com.apple.mouse.scaling -float 2
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true
+
+# 3.4 键盘
+defaults write NSGlobalDomain KeyRepeat -int 2
+defaults write NSGlobalDomain InitialKeyRepeat -int 15
+
+# 3.5 桌面与窗口
+defaults write com.apple.WindowManager GloballyEnabled -bool true
+
+# 3.6 触发角
+defaults write com.apple.dock wvous-tl-corner -int 2
+defaults write com.apple.dock wvous-tl-modifier -int 0
+defaults write com.apple.dock wvous-bl-corner -int 1
+defaults write com.apple.dock wvous-bl-modifier -int 0
+defaults write com.apple.dock wvous-br-corner -int 5
+defaults write com.apple.dock wvous-br-modifier -int 0
+
+# 3.8 电源与睡眠（需要 sudo）
+sudo pmset -c displaysleep 0
+sudo pmset -c sleep 1
+
+# 重启 Dock 使设置生效
+killall Dock
+
+echo "=== macOS 系统设置配置完成 ==="
+```
