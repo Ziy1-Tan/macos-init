@@ -16,24 +16,12 @@
 
 ## 1. 基础工具链（必须按顺序）
 
-> 本节中的步骤存在依赖关系，请严格按照 1.1 -> 1.2 -> 1.3 的顺序执行。
-
 ### 1.1 Homebrew
 
-**安装**
-
 ```bash
-# 检查是否已安装
 if ! command -v brew &>/dev/null; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-```
-
-**验证**
-
-```bash
-brew --version
-# 预期输出：Homebrew 4.x.x
 ```
 
 ### 1.2 CLI 工具（brew install）
@@ -46,17 +34,8 @@ brew --version
 | 终端 | `tmux` |
 | Shell | `zsh` |
 
-**安装**
-
 ```bash
 brew install ripgrep fd fzf zoxide neofetch curl tldr tmux zsh
-```
-
-**验证**
-
-```bash
-command -v rg fd fzf zoxide neofetch curl tldr tmux zsh
-# 每个命令都应输出对应的可执行文件路径
 ```
 
 ### 1.3 语言运行时
@@ -79,11 +58,6 @@ fi
 
 # 安装 Node.js LTS
 nvm install --lts
-
-# 验证
-nvm --version
-node --version   # >= 20.x
-npm --version
 ```
 
 **Miniconda**
@@ -103,16 +77,11 @@ if ! command -v conda &>/dev/null; then
   # 清理安装包
   rm -f /tmp/Miniconda3-latest-MacOSX-arm64.sh
 fi
-
-# 验证（需要重新加载 shell 或 source ~/.zshrc）
-conda --version
 ```
 
 ---
 
 ## 2. 官网应用安装
-
-> 所有 GUI 应用一律从官网下载安装，不使用 Homebrew Cask。下载过程由 Agent 使用 `agent-browser` 访问官网自动完成。Apple Silicon 架构优先。
 
 ### 2.0 前置依赖：安装 agent-browser
 
@@ -124,8 +93,6 @@ fi
 ```
 
 ### 2.1 DMG 应用（标准拖拽安装）
-
-Agent 对每个应用执行：`agent-browser` 访问官网 → 定位下载按钮 → 下载 DMG 到 `~/Downloads/` → bash 挂载安装。
 
 | 应用 | 用途 | 官网 | 架构 |
 |------|------|------|------|
@@ -165,8 +132,6 @@ cp -R /Volumes/<卷名>/<应用名>.app /Applications/
 hdiutil detach /Volumes/<卷名>
 ```
 
-> **注意**：Agent 需根据每个官网的实际页面结构调整 `snapshot` → `click` → `download` 步骤。上述为通用模板，具体 `@ref` 由 Agent 在运行时通过 `snapshot -i` 获取。
-
 ### 2.2 非标准安装
 
 #### Itsycal（菜单栏日历 · zip 下载）
@@ -175,12 +140,10 @@ hdiutil detach /Volumes/<卷名>
 - **架构**：Universal
 
 ```bash
-# Agent 下载
 agent-browser open "https://www.mowglii.com/itsycal/"
 agent-browser snapshot -i
 agent-browser download <zip链接ref> ~/Downloads/Itsycal.zip
 
-# 安装
 unzip ~/Downloads/Itsycal.zip -d /tmp/itsycal
 mv /tmp/itsycal/Itsycal.app /Applications/
 rm -rf /tmp/itsycal
@@ -192,12 +155,10 @@ rm -rf /tmp/itsycal
 - **架构**：通用格式
 
 ```bash
-# Agent 下载
 agent-browser open "https://fliqlo.com/"
 agent-browser snapshot -i
 agent-browser download <下载按钮ref> ~/Downloads/Fliqlo.saver
 
-# 安装
 cp ~/Downloads/Fliqlo.saver /Library/Screen\ Savers/
 ```
 
@@ -209,13 +170,11 @@ cp ~/Downloads/Fliqlo.saver /Library/Screen\ Savers/
 - 字体文件与 CPU 架构无关
 
 ```bash
-# Agent 访问 GitHub Release 页面下载两个字体 zip
 agent-browser open "https://github.com/ryanoasis/nerd-fonts/releases/latest"
 agent-browser snapshot -i
 agent-browser download <FiraCode.zip-ref> ~/Downloads/FiraCode.zip
 agent-browser download <SourceCodePro.zip-ref> ~/Downloads/SourceCodePro.zip
 
-# 安装
 for font in FiraCode SourceCodePro; do
   unzip ~/Downloads/${font}.zip -d /tmp/${font}
   cp /tmp/${font}/*.ttf ~/Library/Fonts/
@@ -226,10 +185,8 @@ done
 #### Microsoft To Do（Mac App Store）
 
 - **官网**：https://apps.apple.com/app/microsoft-to-do/id1274495053
-- 通过 Mac App Store 下载安装，App Store 自动分发 Apple Silicon 原生版本。
 
 ```bash
-# Agent 打开 App Store 页面引导用户安装
 agent-browser open "https://apps.apple.com/app/microsoft-to-do/id1274495053"
 # App Store 应用需用户在弹出的 App Store 中点击"获取"，无法全自动完成
 ```
@@ -240,18 +197,14 @@ agent-browser open "https://apps.apple.com/app/microsoft-to-do/id1274495053"
 - **架构**：ARM64
 
 ```bash
-# Agent 下载
 agent-browser open "https://pinyin.sogou.com/mac/"
 agent-browser snapshot -i
 agent-browser download <下载按钮ref> ~/Downloads/sogou_mac.dmg
 
-# 安装（DMG 内为安装器，非拖拽）
 hdiutil attach ~/Downloads/sogou_mac.dmg
 open /Volumes/sogou*/安装搜狗输入法.app || open /Volumes/sogou*/*.pkg
 hdiutil detach /Volumes/sogou*
 ```
-
-> **注意**：安装完成后需在「系统设置 > 键盘 > 输入法」中添加搜狗输入法。
 
 #### Clash Verge Rev（代理客户端 · GitHub Release DMG）
 
@@ -259,12 +212,10 @@ hdiutil detach /Volumes/sogou*
 - **架构**：ARM64（文件名含 `aarch64`）
 
 ```bash
-# Agent 访问 GitHub Release 页面，下载 ARM64 DMG
 agent-browser open "https://github.com/clash-verge-rev/clash-verge-rev/releases/latest"
 agent-browser snapshot -i
 agent-browser download <clash-verge-rev_*_aarch64.dmg-ref> ~/Downloads/ClashVergeRev.dmg
 
-# 安装（DMG 内为拖拽安装）
 hdiutil attach ~/Downloads/ClashVergeRev.dmg
 cp -R "/Volumes/Clash Verge/Clash Verge.app" /Applications/
 hdiutil detach "/Volumes/Clash Verge"
@@ -297,11 +248,9 @@ for app in "${apps[@]}"; do
   [ -e "$app" ] && echo "✓ $app" || echo "✗ $app 未安装"
 done
 
-# 字体验证
 ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro* 2>/dev/null \
   && echo "✓ Nerd Fonts 已安装" || echo "✗ Nerd Fonts 未安装"
 
-# 搜狗输入法验证（安装在 /Library/Input Methods/）
 [ -d "/Library/Input Methods/SogouInput.app" ] \
   && echo "✓ 搜狗输入法已安装" || echo "✗ 搜狗输入法未安装"
 ```
@@ -309,8 +258,6 @@ ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro* 2>/dev/null \
 ---
 
 ## 3. macOS 系统设置
-
-> 所有设置项均使用 `defaults write` / CLI 命令配置，每项附带验证命令。修改 Dock 相关设置后需执行 `killall Dock` 使其生效。需要 `sudo` 的命令建议在 Terminal.app 中执行以便输入密码。
 
 ### 3.1 Dock
 
@@ -357,8 +304,6 @@ killall Dock
 
 ### 3.6 触发角
 
-> 触发角数值含义：`1` = 无操作，`2` = Mission Control，`5` = 启动屏幕保护程序。`modifier` 设为 `0` 表示不需要修饰键。
-
 | 角落 | 动作 | 配置命令 |
 |------|------|----------|
 | 左上角 | Mission Control | `defaults write com.apple.dock wvous-tl-corner -int 2 && defaults write com.apple.dock wvous-tl-modifier -int 0` |
@@ -371,23 +316,11 @@ killall Dock
 killall Dock
 ```
 
-**验证**
-
-```bash
-defaults read com.apple.dock wvous-tl-corner   # → 2
-defaults read com.apple.dock wvous-br-corner   # → 5
-defaults read com.apple.dock wvous-bl-corner   # → 1
-```
-
 ### 3.7 屏幕保护
 
-- Fliqlo 须在第 2 节安装完成后配置。
-- 触发方式：右下角触发角（见 3.6）。
-- 选择 Fliqlo 为活跃屏保可能需要 UI 自动化（系统设置 > 屏幕保护程序 > 选择 Fliqlo）。
+选择 Fliqlo 为活跃屏保：系统设置 > 屏幕保护程序 > 选择 Fliqlo（需 Fliqlo 已在第 2 节安装）。
 
 ### 3.8 电源与睡眠
-
-> 需要 `sudo` 权限，Agent 应使用 Terminal.app 执行以便输入密码。
 
 | 设置 | 目标值 | 配置命令 | 验证命令 |
 |------|--------|----------|----------|
@@ -395,8 +328,6 @@ defaults read com.apple.dock wvous-bl-corner   # → 1
 | 接电源时系统睡眠 | 1 分钟 | `sudo pmset -c sleep 1` | `pmset -g custom` 中 AC Power 下 `sleep 1` |
 
 ### 3.9 一键配置脚本
-
-> 将 3.1 ~ 3.8 中所有 `defaults write` 与 `pmset` 命令整合为一个脚本，便于一次性执行。
 
 ```bash
 #!/bin/bash
@@ -450,10 +381,6 @@ echo "=== macOS 系统设置配置完成 ==="
 
 ### 4.1 dotfiles 同步
 
-使用 [dotbot](https://github.com/anishathalye/dotbot) 管理的 dotfiles 仓库，包含 zshrc、gitconfig、tmux.conf、vimrc、ssh config、zsh 模块等配置。
-
-**安装**
-
 ```bash
 if [ ! -d "$HOME/dotfiles" ]; then
   git clone https://github.com/Ziy1-Tan/dotfiles.git ~/dotfiles
@@ -461,26 +388,13 @@ fi
 cd ~/dotfiles && git submodule update --init --recursive && ./install
 ```
 
-**验证**
-
-```bash
-test -L ~/.zshrc && echo "zshrc symlinked"
-test -L ~/.gitconfig && echo "gitconfig symlinked"
-test -L ~/.tmux.conf && echo "tmux.conf symlinked"
-test -L ~/.vimrc && echo "vimrc symlinked"
-```
-
 ### 4.2 终端配置
 
 - **WezTerm** (`~/.wezterm.lua`)：dotfiles 不管理此文件，需要单独配置或从备份恢复。
 
-> **注意**：如果有备份这些配置文件，可以手动复制到对应位置。
-
 ---
 
 ## 5. Dock 排列规范
-
-> 清空当前 Dock 后按指定顺序添加应用。仅添加已安装在 `/Applications/` 中的应用。
 
 **安装 dockutil**
 
@@ -521,8 +435,6 @@ dockutil --add '' --type small-spacer --section apps --after 'SwitchHosts'
 ---
 
 ## 6. 验收标准
-
-> 将所有验证整合为最终检查清单，在全部配置完成后统一执行。
 
 ### 6.1 工具版本检查
 
