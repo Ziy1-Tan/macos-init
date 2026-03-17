@@ -1,34 +1,33 @@
 # macos-init
 
-An agent-readable macOS bootstrap spec. Define your target Mac setup in a Markdown document, then let an AI agent execute it.
+一份面向 AI Agent 的 macOS 初始化配置规范。用一份 Markdown 文档描述你的 Mac 目标状态，让 AI Agent 来执行。
 
-Inspired by [stdrc/macos-init](https://github.com/stdrc/macos-init).
+灵感来自 [stdrc/macos-init](https://github.com/stdrc/macos-init)。
 
-## What It Covers
+## 涵盖内容
 
-- **Base toolchain**: Homebrew, CLI tools, language runtimes (nvm, Node.js, bun, uv, Miniconda)
-- **GUI applications**: All installed from official websites (no Homebrew Cask)
-- **macOS system settings**: Dock, appearance, trackpad, keyboard, hot corners, screensaver, power management
-- **Dev tools**: dotfiles sync, terminal configuration
-- **Dock arrangement**: Custom app order via dockutil
-- **Verification**: Every step includes acceptance criteria
+- **基础工具链**：Homebrew、CLI 工具、语言运行时（nvm、Node.js、bun、uv、Miniconda）
+- **GUI 应用安装**：全部从官网下载安装（不使用 Homebrew Cask）
+- **macOS 系统设置**：Dock、外观、触控板、键盘、触发角、屏幕保护、电源管理
+- **开发工具**：dotfiles 同步、终端配置
+- **Dock 排列**：通过 dockutil 自定义应用顺序
+- **验收标准**：每个步骤均包含验证方式
 
-## Usage
+## 使用方法
 
-```bash
-git clone https://github.com/Ziy1-Tan/macos-init.git
-cd macos-init
+无需 clone 仓库，直接告诉 AI Agent：
 
-# Hand macos-config.md to an AI agent and let it execute the steps in order
-```
+> 请遵照 https://raw.githubusercontent.com/Ziy1-Tan/macos-init/main/macos-config.md 的配置规范，帮我初始化这台 Mac。
 
-## Approach
+AI Agent 会自动读取配置文档并按顺序执行所有步骤。
 
-Instead of shell scripts or Ansible playbooks, this project uses a **Markdown specification** designed to be read and executed by AI agents (e.g., Claude Code). The spec includes:
+## 设计理念
 
-- Step-by-step installation instructions
-- `defaults write` commands for system settings
-- UI automation guidance for settings without CLI support
-- Verification commands for every configuration item
+与 shell 脚本或 Ansible playbook 不同，本项目使用 **Markdown 规范**作为载体，专为 AI Agent（如 Claude Code）阅读和执行而设计。规范包含：
 
-This makes the setup process readable, maintainable, and reproducible.
+- 逐步安装说明
+- 系统设置的 `defaults write` 命令
+- 无 CLI 支持的设置项的 UI 自动化指引
+- 每项配置的验证命令
+
+让初始化流程更易读、易维护、可复现。
