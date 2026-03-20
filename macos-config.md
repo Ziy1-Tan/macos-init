@@ -377,24 +377,7 @@ echo "=== macOS 系统设置配置完成 ==="
 
 ---
 
-## 4. 开发工具配置
-
-### 4.1 dotfiles 同步
-
-```bash
-if [ ! -d "$HOME/dotfiles" ]; then
-  git clone https://github.com/Ziy1-Tan/dotfiles.git ~/dotfiles
-fi
-cd ~/dotfiles && git submodule update --init --recursive && ./install
-```
-
-### 4.2 终端配置
-
-- **WezTerm** (`~/.wezterm.lua`)：dotfiles 不管理此文件，需要单独配置或从备份恢复。
-
----
-
-## 5. Dock 排列规范
+## 4. Dock 排列规范 Dock 排列规范
 
 **安装 dockutil**
 
@@ -434,9 +417,9 @@ dockutil --add '' --type small-spacer --section apps --after 'SwitchHosts'
 
 ---
 
-## 6. 验收标准
+## 5. 验收标准
 
-### 6.1 工具版本检查
+### 5.1 工具版本检查
 
 ```bash
 brew --version
@@ -446,11 +429,11 @@ conda --version
 nvm --version
 ```
 
-### 6.2 应用安装验证
+### 5.2 应用安装验证
 
 > 见第 2.3 节安装验证脚本，此处不再重复。
 
-### 6.3 架构验证
+### 5.3 架构验证
 
 ```bash
 # 确认关键应用为 ARM64 架构
@@ -458,7 +441,7 @@ lipo -archs /Applications/WezTerm.app/Contents/MacOS/wezterm-gui
 # 预期输出包含 arm64
 ```
 
-### 6.4 系统设置验证
+### 5.4 系统设置验证
 
 ```bash
 defaults read com.apple.dock autohide              # → 0
@@ -472,17 +455,9 @@ defaults read com.apple.dock wvous-br-corner       # → 5
 defaults read com.apple.WindowManager GloballyEnabled  # → 1
 ```
 
-### 6.5 dotfiles 部署验证
-
-```bash
-test -L ~/.zshrc && echo "ok"
-test -L ~/.gitconfig && echo "ok"
-zsh -c "source ~/.zshrc && echo ok"
-```
-
 ---
 
-## 7. 备注（执行策略）
+## 6. 备注（执行策略）
 
 - 遇到需要 `sudo` 或密码输入的步骤时，使用 Terminal.app 执行以便用户输入密码。
 - 官网优先级高于其他来源；除非官网不可用，不使用第三方下载站。
