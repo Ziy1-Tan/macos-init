@@ -63,7 +63,7 @@
 |------|------|------|----------|----------|
 | Itsycal | https://www.mowglii.com/itsycal/ | Universal | zip 解压后移入 /Applications | `/Applications/Itsycal.app` |
 | Fliqlo | https://fliqlo.com/ | Universal | .saver 文件复制到 `/Library/Screen Savers/` | `/Library/Screen Savers/Fliqlo.saver` |
-| Nerd Fonts (FiraCode + SourceCodePro) | https://github.com/ryanoasis/nerd-fonts/releases/latest | 与架构无关 | zip 解压，.ttf 复制到 `~/Library/Fonts/` | `ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro*` |
+| Nerd Fonts (FiraCode + SauceCodePro) | https://github.com/ryanoasis/nerd-fonts/releases/latest | 与架构无关 | zip 解压，.ttf 复制到 `~/Library/Fonts/` | `ls ~/Library/Fonts/FiraCodeNerdFont* ~/Library/Fonts/SauceCodeProNerdFont*` |
 | 微信输入法 | https://z.weixin.qq.com/ | ARM64 | DMG 拖拽安装 | `/Library/Input Methods/WeChatIM.app` |
 | Clash Verge Rev | https://github.com/clash-verge-rev/clash-verge-rev/releases/latest | ARM64 | GitHub Release，文件名含 `aarch64`，DMG 拖拽安装 | `/Applications/Clash Verge.app` |
 | Microsoft To Do | https://apps.apple.com/app/microsoft-to-do/id1274495053 | — | Mac App Store，需用户手动点击获取 | `/Applications/Microsoft To Do.app` |
@@ -196,7 +196,7 @@ for app in \
 done
 
 # 字体
-ls ~/Library/Fonts/*FiraCode* ~/Library/Fonts/*SauceCodePro* 2>/dev/null \
+ls ~/Library/Fonts/FiraCodeNerdFont* ~/Library/Fonts/SauceCodeProNerdFont* 2>/dev/null \
   && echo "✓ Nerd Fonts" || echo "✗ Nerd Fonts"
 
 # 微信输入法
